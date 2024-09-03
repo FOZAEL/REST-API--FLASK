@@ -18,12 +18,13 @@ db = SQLAlchemy(app)
 class DomainLookup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     domain = db.Column(db.String(255), nullable=False)
-    ip_address = db.Column(db.String(45), nullable=True)
+    ip_addresses = db.Column(db.JSON, nullable=True)
     created_time = db.Column(db.Integer, nullable=False)
     client_ip = db.Column(db.String(45), nullable=False)
     user_agent = db.Column(db.String(255), nullable=True)
     query_status = db.Column(db.String(10), nullable=False)
     response_time = db.Column(db.Float, nullable=True)
+    query_id = db.Column(db.String(45), nullable=False)
 
     def __repr__(self):
         return f"<DomainLookup {self.domain} - {self.ip_address}>"
@@ -90,16 +91,17 @@ def lookup():
     for ip in ip_addresses:
         addresses.append({"ip": ip, "queryID": query_id})
         
-        lookup_record = DomainLookup(
-            domain=domain,
-            ip_address=ip,
-            created_time=created_time,
-            client_ip=client_ip,
-            user_agent=user_agent,
-            query_status=query_status,
-            response_time=response_time
-        )
-        db.session.add(lookup_record)
+    lookup_record = DomainLookup(
+        domain=domain,
+        ip_addresses=addresses,
+        created_time=created_time,
+        client_ip=client_ip,
+        user_agent=user_agent,
+        query_status=query_status,
+        response_time=response_time,
+        query_id=query_id
+    )
+    db.session.add(lookup_record)
 
     db.session.commit()
 
@@ -120,10 +122,25 @@ def validate():
         r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
         r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
     )
-    responce = {"ip" : "is a Valid ipV4"} if pattern.match(data.get('ip')) is not None else {"ip" : "is NOT a Valid ipV4"}
-    app.logger.info(responce)
-    return jsonify(responce)
-    
+    response = {"ip" : "is a Valid ipV4"} if pattern.match(data.get('ip')) is not None else {"ip" : "is NOT a Valid ipV4"}
+    app.logger.info(response)
+    return jsonify(response)
+
+@api_v1.route('/history', methods=['GET'])
+def history():
+    last_queries = DomainLookup.query.order_by(DomainLookup.created_time.desc()).limit(20).all()
+    response = []
+    for query in last_queries:
+        response.append({
+            "addresses": query.ip_addresses,
+            "client_ip": query.client_ip,
+            "created_time": query.created_time,
+            "domain": query.domain,
+            "queryID": query.query_id
+        })
+
+    app.logger.info(response)
+    return jsonify(response)
 
 app.register_blueprint(get_swaggerui_blueprint(
     '/api/docs',
