@@ -1,6 +1,18 @@
 version: '3.1'
 
 services:
+    flask:
+        build: 
+            context: .
+        networks:
+            - app
+        ports:
+            - "3000:3000"
+        environment:
+            DB_URI: "${DB_URI}"
+        depends_on:
+            - db
+
     db:
         image: "mysql:8.0"
         ports:
