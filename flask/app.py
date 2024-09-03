@@ -1,5 +1,4 @@
 from flask import Flask, Blueprint, jsonify, request
-from flask_restful import Api, Resource
 import time
 import socket
 from os import environ
@@ -26,12 +25,36 @@ def health():
         "status": "OK",
     })
 
+def dns_lookup(domain):
+    try:
+        result = socket.getaddrinfo(domain, None, socket.AF_INET)
+        ip_addresses = [item[4][0] for item in result]
+        return ip_addresses
+    except socket.gaierror:
+        return []
+
+
 @api_v1.route('/tools/lookup', methods=['GET'])
 def lookup():
     domain = request.args.get('domain')
-    return jsonify({
-        "IP": socket.gethostbyname(domain)
-    })
+    if not domain:
+        return jsonify({"message": "Domain parameter is required"}), 400  
+    client_ip = request.remote_addr
+    query_id = int(time.time() * 1000)
+    created_time = int(time.time())
+
+    ip_addresses = dns_lookup(domain)
+    addresses = [{"ip": ip, "queryID": query_id} for ip in ip_addresses]
+
+    response = {
+        "addresses": addresses,
+        "client_ip": client_ip,
+        "created_time": created_time,
+        "domain": domain,
+        "queryID": query_id
+    }
+
+    return jsonify(response)
 
 app.register_blueprint(get_swaggerui_blueprint(
     '/api/docs',
