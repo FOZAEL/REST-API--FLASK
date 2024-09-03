@@ -39,17 +39,21 @@ api_v1 = Blueprint('api_v1', __name__, url_prefix='/v1')
 @api.route('/', methods=['GET'])
 def root():
     run_on_kubernetes = True if environ.get("KUBERNETES_SERVICE_HOST") is not None else False
-    return jsonify({
+    response = {
         "version": "0.1.0",
         "date": int(time.time()),
         "kubernetes": run_on_kubernetes
-    })
+    }
+    app.logger.info(response)
+    return jsonify(response)
 
 @api.route('/health', methods=['GET'])
 def health():
-    return jsonify({
+    response = {
         "status": "OK",
-    })
+    }
+    app.logger.info(response)
+    return jsonify(response)
 
 def is_valid_domain(domain):
     pattern = re.compile(
@@ -129,6 +133,8 @@ def validate():
 @api_v1.route('/history', methods=['GET'])
 def history():
     last_queries = DomainLookup.query.order_by(DomainLookup.created_time.desc()).limit(20).all()
+    if ( last_queries is None ):
+        return jsonify({"message": "Database is empty, do some query first"}), 400
     response = []
     for query in last_queries:
         response.append({
