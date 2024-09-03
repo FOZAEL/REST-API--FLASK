@@ -5,6 +5,8 @@ from os import environ
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+import re
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -48,6 +50,12 @@ def health():
         "status": "OK",
     })
 
+def is_valid_domain(domain):
+    pattern = re.compile(
+        r'^(?=.{1,253}$)(?=.{1,63}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)\.(?!-)[A-Za-z0-9-]{1,63}(?<!-)$'
+    )
+    return pattern.match(domain) is not None
+
 def dns_lookup(domain):
     try:
         start_time = time.time()
@@ -60,12 +68,11 @@ def dns_lookup(domain):
     except socket.gaierror:
         return [], None
 
-
 @api_v1.route('/tools/lookup', methods=['GET'])
 def lookup():
     domain = request.args.get('domain')
-    if not domain:
-        return jsonify({"message": "Domain parameter is required"}), 400
+    if not is_valid_domain(domain):
+        return jsonify({"message": "Domain parameter is Not Valid or Provided"}), 400
     
     client_ip = request.remote_addr
     user_agent = request.headers.get('User-Agent')
@@ -105,6 +112,18 @@ def lookup():
     }
     app.logger.info(response)
     return jsonify(response)
+
+@api_v1.route('/tools/validate', methods=['POST'])
+def validate():
+    data = request.get_json()
+    pattern = re.compile(
+        r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+        r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+    )
+    responce = {"ip" : "is a Valid ipV4"} if pattern.match(data.get('ip')) is not None else {"ip" : "is NOT a Valid ipV4"}
+    app.logger.info(responce)
+    return jsonify(responce)
+    
 
 app.register_blueprint(get_swaggerui_blueprint(
     '/api/docs',
