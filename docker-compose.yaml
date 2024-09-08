@@ -12,6 +12,7 @@ services:
             DB_URI: "${DB_URI}"
         depends_on:
             - db
+        restart: always
 
     db:
         image: "mysql:8.0"
@@ -27,6 +28,7 @@ services:
             - "appdb:/var/lib/mysql"
         networks:
             - app
+        restart: always
 
     phpmyadmin:
         depends_on:

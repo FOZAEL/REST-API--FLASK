@@ -7,8 +7,6 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import re
 
-load_dotenv()
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get("DB_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -86,14 +84,14 @@ def lookup():
 
     ip_addresses, response_time = dns_lookup(domain)
     addresses = []
-
     query_status = 'success' if ip_addresses else 'failure'
 
     if query_status == 'failure':
         return jsonify({"message": "The Host IP Not Found"}), 404
 
     for ip in ip_addresses:
-        addresses.append({"ip": ip, "queryID": query_id})
+        if not any(address['ip'] == ip for address in addresses):
+            addresses.append({"ip": ip, "queryID": query_id})
         
     lookup_record = DomainLookup(
         domain=domain,
