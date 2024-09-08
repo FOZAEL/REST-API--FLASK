@@ -1,13 +1,25 @@
-from flask import Flask, Blueprint, jsonify, request
+from flask import Flask, Blueprint, jsonify, request, Response
 import time
 import socket
 from os import environ
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_sqlalchemy import SQLAlchemy
-from dotenv import load_dotenv
+from prometheus_client import Counter, generate_latest, Summary
 import re
 
 app = Flask(__name__)
+
+# Prometheus Metrics
+view_metric = Counter('view', 'lookup view', ['lookup'])
+duration = Summary('duration_compute_seconds', 'Time spent in the lookup() function')
+endpoint_call_counter = Counter('endpoint_calls', 'Number of calls to each endpoint', ['endpoint'])
+
+@app.before_request
+def track_endpoint_call():
+    endpoint = f"{request.endpoint}"
+    endpoint_call_counter.labels(endpoint=endpoint).inc()
+
+# DB
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get("DB_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -72,6 +84,7 @@ def dns_lookup(domain):
         return [], None
 
 @api_v1.route('/tools/lookup', methods=['GET'])
+@duration.time()
 def lookup():
     domain = request.args.get('domain')
     if not is_valid_domain(domain):
@@ -114,6 +127,7 @@ def lookup():
         "domain": domain,
         "queryID": query_id
     }
+    view_metric.labels(lookup=domain).inc()
     app.logger.info(response)
     return jsonify(response)
 
@@ -145,6 +159,11 @@ def history():
 
     app.logger.info(response)
     return jsonify(response)
+
+
+@app.route('/metrics')
+def metrics():
+    return Response(generate_latest(), mimetype='text/plain')
 
 app.register_blueprint(get_swaggerui_blueprint(
     '/api/docs',
