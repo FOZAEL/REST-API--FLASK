@@ -29,7 +29,7 @@ jobs:
       - name: Linting
         run: |
           pip install pylint
-          cd flask && pylint app.py test_app.py --disable=C0114,C0115 --max-line-length=120 --jobs=1
+          cd flask && pylint app.py test_app.py --disable=C0114,C0115 --max-line-length=120 --files-output=y
       
       - name: Run tests
         run: |
