@@ -33,5 +33,5 @@ jobs:
       
       - name: Run tests
         run: |
-          SQLALCHEMY_DATABASE_URI=${{ secrets.DB_URI }} cd flask && python -m unittest test_app.py
+          cd flask && python -m unittest test_app.py
 
