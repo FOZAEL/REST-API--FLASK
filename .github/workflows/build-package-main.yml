@@ -1,10 +1,7 @@
-name: CD Pipeline On Main
+name: CD pipeline on main
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
