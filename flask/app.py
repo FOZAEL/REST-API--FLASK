@@ -140,7 +140,7 @@ def validate():
         r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
         r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
     )
-    response = {"ip" : "is a Valid ipV4"} if pattern.match(data.get('ip')) is not None else {"ip" : "is NOT a Valid ipV4"}
+    response = {"ip" : "is a Valid IP V4"} if pattern.match(data.get('ip')) is not None else {"ip" : "is NOT a Valid ipV4"}
     app.logger.info(response)
     return jsonify(response)
 
