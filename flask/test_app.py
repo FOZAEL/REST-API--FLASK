@@ -1,23 +1,13 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import json
-from app import app, db
+from app import app
 
 class AppTestCase(unittest.TestCase):
 
     def setUp(self):
         app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        
         self.client = app.test_client()
-        with app.app_context():
-            db.create_all()
-
-    def tearDown(self):
-        with app.app_context():
-            db.session.remove()
-            db.drop_all()
 
     def test_root(self):
         response = self.client.get('/')

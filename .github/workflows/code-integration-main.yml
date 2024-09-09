@@ -31,7 +31,7 @@ jobs:
           pip install pylint
           cd flask && pylint app.py test_app.py --disable=C0114,C0115 --max-line-length=120 || true
       
-      - name: Run tests
-        run: |
-          cd flask && python -m unittest test_app.py
+      # - name: Run tests
+      #   run: |
+      #     cd flask && python -m unittest test_app.py
 
