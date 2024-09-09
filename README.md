@@ -1,4 +1,5 @@
-# Take-home Assignments - External
+# REST API - NSLOOKUP WITH FLASK
+### Take-home Assignments - External
 
 This is a Flask application that connects to a MySQL database. It is Dockerized and can be built and run using Docker Compose. Additionally, it includes Kubernetes manifests for deployment.
 
