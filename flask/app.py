@@ -1,11 +1,13 @@
-from flask import Flask, Blueprint, jsonify, request, Response
-import time
-import socket
-from os import environ
-from flask_swagger_ui import get_swaggerui_blueprint
-from flask_sqlalchemy import SQLAlchemy
-from prometheus_client import Counter, generate_latest, Summary
 import re
+import socket
+import time
+from os import environ
+
+from flask_sqlalchemy import SQLAlchemy
+from flask_swagger_ui import get_swaggerui_blueprint
+from prometheus_client import Counter, Summary, generate_latest
+
+from flask import Blueprint, Flask, Response, jsonify, request
 
 app = Flask(__name__)
 

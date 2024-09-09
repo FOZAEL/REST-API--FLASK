@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-flask-app
+  labels:
+    app: my-flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-flask-app
+  template:
+    metadata:
+      labels:
+        app: my-flask-app
+    spec:
+      containers:
+      - name: my-flask-app
+        image: fozael/my-flask-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_URI
+          valueFrom:
+            secretKeyRef:
+              name: flask-secret
+              key: DB_URI
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-flask-app
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: my-flask-app
+  type: LoadBalancer

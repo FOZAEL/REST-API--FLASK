@@ -1,0 +1,5 @@
+{
+  "pylint.args": [
+    "\"pylint.args\": [\"--disable=C0114\", \"--disable=C0115\", \"--max-line-length=120\"]"
+  ]
+}
