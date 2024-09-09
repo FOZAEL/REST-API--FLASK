@@ -24,8 +24,8 @@ jobs:
           
       - name: Build and push Docker image
         run: |
-          docker build -t my-flask-app:${{ github.sha }} .
-          docker tag my-flask-app:${{ github.sha }} my-flask-app:latest
-          docker push my-flask-app:${{ github.sha }}
-          docker push my-flask-app:latest
+          docker build -t fozael/my-flask-app:${{ github.sha }} .
+          docker tag my-flask-app:${{ github.sha }} fozael/my-flask-app:latest
+          docker push fozael/my-flask-app:${{ github.sha }}
+          docker push fozael/my-flask-app:latest
 
